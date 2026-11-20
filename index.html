@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G LA DALLE — Street Burgers & Smash Halal | Concept Redesign</title>
+    
+    <!-- Google Fonts: Anton (Titres Condensés Pop) & Space Grotesk (Textes & Prix) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FDF6E7',
+                        creamDark: '#F4EAD5',
+                        cobalt: '#e04403',
+                        cobaltDark: '#c23a02',
+                        ketchup: '#70d44b',
+                        cheddar: '#FFB800',
+                        ink: '#121316'
+                    },
+                    fontFamily: {
+                        display: ['Anton', 'sans-serif'],
+                        sans: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Vue.js 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        body {
+            background-color: #FDF6E7;
+            color: #121316;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Rotation lente continue pour les stickers */
+        @keyframes spinSlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .sticker-spin {
+            animation: spinSlow 16s linear infinite;
+        }
+
+        /* Marquee infini */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marquee 24s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+
+        /* Effet ombre portée propre pour les burgers */
+        .burger-shadow {
+            filter: drop-shadow(0 22px 24px rgba(18, 19, 22, 0.16));
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-cobalt selection:text-cream">
+
+<div id="app">
+
+    <!-- 1. NAVBAR ÉPURÉE -->
+    <header class="sticky top-0 z-40 bg-cream/90 backdrop-blur-md">
+        <nav class="max-w-7xl mx-auto px-5 md:px-10 py-5 flex items-center justify-between">
+            
+            <!-- Gauche : Liens de navigation courts -->
+            <div class="hidden md:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-ink">
+                <a href="#popular" class="hover:text-cobalt transition-colors">Nos Burgers</a>
+                <a href="#full-menu" class="hover:text-cobalt transition-colors">La Carte</a>
+                <a href="#restos" class="hover:text-cobalt transition-colors">Nos Restos (80+)</a>
+            </div>
+
+            <!-- Centre : Logo -->
+            <a href="#" class="flex flex-col items-center leading-none group">
+                <img src="assets/images/logo.svg" alt="G La Dalle" class="h-15">
+            </a>
+
+            <!-- Droite : Icônes Sur Place / Livraison + Pill Button -->
+            <div class="flex items-center gap-2.5">
+                <button @click="openOrderModal('Click & Collect')" title="Sur place / À emporter"
+                    class="w-10 h-10 rounded-full border border-ink/20 hover:border-cobalt hover:text-cobalt flex items-center justify-center transition-colors cursor-pointer">
+                    <i data-lucide="store" class="w-4 h-4"></i>
+                </button>
+                <button @click="openOrderModal('Livraison')" title="Livraison à domicile"
+                    class="w-10 h-10 rounded-full border border-ink/20 hover:border-cobalt hover:text-cobalt flex items-center justify-center transition-colors cursor-pointer">
+                    <i data-lucide="bike" class="w-4 h-4"></i>
+                </button>
+                <button @click="openOrderModal(null)"
+                    class="bg-cobalt hover:bg-cobaltDark text-cream font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-full transition-all active:scale-95 cursor-pointer shadow-sm">
+                    J'AI LA DALLE
+                </button>
+            </div>
+
+        </nav>
+    </header>
+
+    <!-- 2. HERO CARROUSEL INTERACTIF (3 BURGERS - FOCUS CENTRAL) -->
+    <section id="popular" class="pt-6 pb-20 px-4 md:px-10 max-w-7xl mx-auto">
+        
+        <div class="text-center mb-10 md:mb-14">
+            <h1 class="font-display text-4xl sm:text-5xl md:text-6xl text-cobalt uppercase tracking-wide">
+                DÉCOUVRE NOS CLASSIQUES DU MOMENT
+            </h1>
+        </div>
+
+        <!-- Grille Carrousel 3 Colonnes -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 lg:gap-4 relative">
+            
+            <!-- BURGER GAUCHE (Précédent) -->
+            <div class="hidden lg:flex lg:col-span-3 flex-col items-center text-center opacity-90 hover:opacity-100 transition-opacity">
+                <div class="relative w-52 h-52 flex items-center justify-center mb-4">
+                    <div :class="prevBurger.stickerBg" class="absolute -top-2 left-4 w-14 h-14 rounded-full flex items-center justify-center text-center p-1 shadow-md z-10 sticker-spin">
+                        <span class="font-display text-[10px] leading-tight uppercase text-white tracking-wider">
+                            {{ prevBurger.tag }}
+                        </span>
+                    </div>
+
+                    <img @click="openProductDetail(prevBurger)" :src="prevBurger.image" :alt="prevBurger.name" 
+                         class="w-48 h-48 object-cover rounded-full burger-shadow cursor-pointer hover:scale-105 transition-transform">
+
+                    <button @click="prevSlide" aria-label="Burger précédent"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cream border border-ink/15 hover:border-ketchup text-ketchup hover:bg-ketchup hover:text-white flex items-center justify-center shadow-md transition-all cursor-pointer z-20">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <h3 @click="openProductDetail(prevBurger)" class="font-display text-xl uppercase tracking-wide mb-2 cursor-pointer hover:text-cobalt">{{ prevBurger.name }}</h3>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-ink/75 max-w-[230px] leading-relaxed mb-3">
+                    INGRÉDIENTS : {{ prevBurger.ingredients }}
+                </p>
+                <div class="text-xs font-bold uppercase tracking-wider">
+                    SIMPLE <span class="text-cobalt">{{ prevBurger.prices.single }}</span> / 
+                    DOUBLE <span class="text-cobalt">{{ prevBurger.prices.double }}</span> / 
+                    TRIPLE <span class="text-cobalt">{{ prevBurger.prices.triple }}</span>
+                </div>
+            </div>
+
+            <!-- BURGER CENTRAL (Actif / Focus Géant) -->
+            <div class="lg:col-span-6 flex flex-col items-center text-center">
+                <div class="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center mb-6 hero-center-burger group">
+                    
+                    <!-- Gros Sticker Pop Rotatif -->
+                    <div :class="currentBurger.stickerBg" class="absolute top-2 left-6 sm:left-10 w-20 h-20 rounded-full flex flex-col items-center justify-center text-center p-2 shadow-lg z-10 sticker-spin border-2 border-cream">
+                        <span class="font-display text-xs leading-none uppercase text-white tracking-wider">
+                            {{ currentBurger.tag }}
+                        </span>
+                        <span class="text-[9px] font-bold uppercase text-white/90 mt-0.5">HALAL</span>
+                    </div>
+
+                    <!-- Visuel Produit Central Cliquable -->
+                    <div @click="openProductDetail(currentBurger)" class="relative cursor-pointer">
+                        <img :src="currentBurger.image" :alt="currentBurger.name" 
+                             class="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 object-cover rounded-full burger-shadow transition-all duration-300 group-hover:scale-105">
+                        
+                        <!-- Badge "Voir la fiche" au survol -->
+                        <span class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-ink/90 text-cream text-[11px] font-bold uppercase px-4 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 whitespace-nowrap shadow-lg">
+                            <i data-lucide="eye" class="w-3.5 h-3.5 text-cheddar"></i>
+                            <span>Détails & Calories</span>
+                        </span>
+                    </div>
+
+                    <!-- Flèches Mobiles -->
+                    <button @click="prevSlide" class="lg:hidden absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cream border border-ink/20 text-ketchup flex items-center justify-center shadow-md">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </button>
+                    <button @click="nextSlide" class="lg:hidden absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-ketchup text-white flex items-center justify-center shadow-md">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Nom & Ingrédients -->
+                <h2 @click="openProductDetail(currentBurger)" class="font-display text-3xl md:text-4xl uppercase tracking-wide mb-2.5 text-ink hover:text-cobalt transition-colors cursor-pointer">
+                    {{ currentBurger.name }}
+                </h2>
+                <p class="text-xs md:text-sm font-semibold uppercase tracking-wide text-ink/80 max-w-md leading-relaxed mb-4">
+                    INGRÉDIENTS : <span class="underline decoration-cobalt/40 underline-offset-4">{{ currentBurger.ingredients }}</span>
+                </p>
+
+                <!-- Ligne des Prix (Simple / Double / Triple) -->
+                <div class="text-xs md:text-sm font-bold uppercase tracking-wider mb-8">
+                    SIMPLE <span class="text-cobalt">{{ currentBurger.prices.single }}</span> / 
+                    DOUBLE <span class="text-cobalt">{{ currentBurger.prices.double }}</span> / 
+                    TRIPLE <span class="text-cobalt">{{ currentBurger.prices.triple }}</span>
+                </div>
+
+                <!-- Boutons Pills Centraux -->
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button @click="openProductDetail(currentBurger)"
+                        class="bg-cobalt hover:bg-cobaltDark text-cream font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-full shadow-md transition-transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-2">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                        <span>DÉTAILS DU PRODUIT</span>
+                    </button>
+                    <button @click="openOrderModal(currentBurger.name)"
+                        class="bg-ink hover:bg-ink/85 text-cream font-bold text-xs uppercase tracking-widest px-7 py-4 rounded-full shadow-md transition-transform hover:-translate-y-0.5 cursor-pointer">
+                        COMMANDER DIRECT
+                    </button>
+                </div>
+            </div>
+
+            <!-- BURGER DROITE (Suivant) -->
+            <div class="hidden lg:flex lg:col-span-3 flex-col items-center text-center opacity-90 hover:opacity-100 transition-opacity">
+                <div class="relative w-52 h-52 flex items-center justify-center mb-4">
+                    <div :class="nextBurger.stickerBg" class="absolute -top-2 left-4 w-14 h-14 rounded-full flex items-center justify-center text-center p-1 shadow-md z-10 sticker-spin">
+                        <span class="font-display text-[10px] leading-tight uppercase text-white tracking-wider">
+                            {{ nextBurger.tag }}
+                        </span>
+                    </div>
+
+                    <img @click="openProductDetail(nextBurger)" :src="nextBurger.image" :alt="nextBurger.name" 
+                         class="w-48 h-48 object-cover rounded-full burger-shadow cursor-pointer hover:scale-105 transition-transform">
+
+                    <button @click="nextSlide" aria-label="Burger suivant"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-ketchup hover:opacity-90 text-white flex items-center justify-center shadow-md transition-all cursor-pointer z-20">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <h3 @click="openProductDetail(nextBurger)" class="font-display text-xl uppercase tracking-wide mb-2 cursor-pointer hover:text-cobalt">{{ nextBurger.name }}</h3>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-ink/75 max-w-[230px] leading-relaxed mb-3">
+                    INGRÉDIENTS : {{ nextBurger.ingredients }}
+                </p>
+                <div class="text-xs font-bold uppercase tracking-wider">
+                    SIMPLE <span class="text-cobalt">{{ nextBurger.prices.single }}</span> / 
+                    DOUBLE <span class="text-cobalt">{{ nextBurger.prices.double }}</span> / 
+                    TRIPLE <span class="text-cobalt">{{ nextBurger.prices.triple }}</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- BANDEAU DÉFILANT -->
+    <div class="bg-cobalt text-cream py-3.5 overflow-hidden border-y-2 border-ink">
+        <div class="animate-marquee flex items-center gap-8 font-display text-xl uppercase tracking-widest">
+            <span>★ 100% HALAL CERTIFIÉ</span>
+            <span>•</span>
+            <span class="text-cheddar">PARTENAIRE PRINCIPAL PFL EUROPE</span>
+            <span>•</span>
+            <span>+80 RESTAURANTS EN FRANCE & LA RÉUNION</span>
+            <span>•</span>
+            <span class="text-cheddar">DALLE DU MOMENT CHAQUE SAISON</span>
+            <span>•</span>
+            <span>★ 100% HALAL CERTIFIÉ</span>
+            <span>•</span>
+            <span class="text-cheddar">PARTENAIRE PRINCIPAL PFL EUROPE</span>
+            <span>•</span>
+            <span>+80 RESTAURANTS EN FRANCE & LA RÉUNION</span>
+            <span>•</span>
+            <span class="text-cheddar">DALLE DU MOMENT CHAQUE SAISON</span>
+            <span>•</span>
+        </div>
+    </div>
+
+    <!-- 3. LA CARTE COMPLÈTE (AVEC BOUTON DÉTAILS SUR CHAQUE PRODUIT) -->
+    <section id="full-menu" class="py-24 px-5 md:px-10 max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+                <span class="text-ketchup font-bold uppercase tracking-widest text-xs block mb-2">RECETTES GÉNÉREUSES</span>
+                <h2 class="font-display text-4xl md:text-6xl text-cobalt uppercase">
+                    TOUTE LA CARTE G LA DALLE
+                </h2>
+            </div>
+
+            <!-- Filtres Pills -->
+            <div class="flex flex-wrap gap-2">
+                <button v-for="cat in ['Tous', 'Burgers', 'Dalle du Moment', 'Frites & Sides', 'Desserts']" :key="cat"
+                    @click="selectedCat = cat"
+                    :class="selectedCat === cat ? 'bg-cobalt text-cream border-cobalt' : 'bg-transparent text-ink border-ink/20 hover:border-cobalt'"
+                    class="px-5 py-2.5 rounded-full border font-bold text-xs uppercase tracking-wider transition-all cursor-pointer">
+                    {{ cat }}
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div v-for="item in filteredFullMenu" :key="item.id"
+                class="bg-creamDark/60 border border-ink/10 rounded-3xl p-6 flex flex-col justify-between hover:border-cobalt transition-all group">
+                <div>
+                    <!-- Image cliquable pour ouvrir la fiche produit -->
+                    <div @click="openProductDetail(item)" class="relative h-52 rounded-2xl overflow-hidden mb-5 bg-cream cursor-pointer">
+                        <img :src="item.image" :alt="item.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span v-if="item.badge" class="absolute top-3 left-3 bg-cobalt text-white text-[11px] font-bold uppercase px-3 py-1 rounded-full">
+                            {{ item.badge }}
+                        </span>
+                        <span class="absolute bottom-3 right-3 bg-ink/85 text-cream text-[10px] font-bold uppercase px-3 py-1 rounded-full flex items-center gap-1">
+                            <i data-lucide="eye" class="w-3 h-3 text-cheddar"></i>
+                            <span>Fiche produit</span>
+                        </span>
+                    </div>
+
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <h3 @click="openProductDetail(item)" class="font-display text-2xl uppercase text-ink hover:text-cobalt transition-colors cursor-pointer">
+                            {{ item.name }}
+                        </h3>
+                        <span class="font-display text-2xl text-cobalt shrink-0">{{ item.price }}</span>
+                    </div>
+                    <p class="text-xs font-medium text-ink/75 uppercase leading-relaxed mb-6">
+                        {{ item.desc }}
+                    </p>
+                </div>
+
+                <!-- Double Action : Détails ou Commander -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button @click="openProductDetail(item)"
+                        class="py-3 rounded-full bg-cream hover:bg-ink text-ink hover:text-cream border border-ink/15 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5">
+                        <i data-lucide="list-checks" class="w-3.5 h-3.5"></i>
+                        <span>Détails</span>
+                    </button>
+                    <button @click="openOrderModal(item.name)"
+                        class="py-3 rounded-full bg-cobalt hover:bg-cobaltDark text-cream font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer">
+                        Commander
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. L'HISTOIRE & L'ADN -->
+    <section id="story" class="py-20 px-5 md:px-10 bg-creamDark border-y border-ink/10">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div class="lg:col-span-6 space-y-6">
+                <span class="inline-block bg-cobalt text-cream text-xs font-bold uppercase px-3.5 py-1 rounded-full">
+                    DEPUIS 2014 • NANTERRE
+                </span>
+                <h2 class="font-display text-4xl md:text-6xl text-ink uppercase leading-[0.98]">
+                    D'UNE DARK KITCHEN À <span class="text-cobalt">+80 RESTAURANTS.</span>
+                </h2>
+                <p class="text-sm md:text-base font-medium text-ink/80 leading-relaxed">
+                    Fondée en 2014 à Nanterre par <strong>Nordine Rezzag-Mohcene</strong> et <strong>Mehdi Mokrani</strong>, G La Dalle a démarré en livraison avant d'ouvrir son premier restaurant en 2015. Lancement en franchise à Bordeaux en 2019, ouverture jusqu'à <strong>La Réunion</strong>, partenaire principal du <strong>PFL Europe</strong> à Paris et rachat par le groupe européen <strong>QSRP</strong> fin 2024.
+                </p>
+
+                <div class="pt-2">
+                    <div class="text-xs font-bold uppercase tracking-wider text-ink/60 mb-3">Nos 5 Valeurs Fondamentales :</div>
+                    <div class="flex flex-wrap gap-2">
+                        <span v-for="val in ['Audace', 'Créativité', 'Proximité', 'Détermination', 'Altruisme']" :key="val"
+                            class="px-4 py-1.5 rounded-full bg-cream border border-ink/15 font-bold text-xs uppercase text-cobalt">
+                            ★ {{ val }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-6 grid grid-cols-2 gap-4">
+                <div class="bg-cream p-7 rounded-3xl border border-ink/10">
+                    <div class="font-display text-5xl text-cobalt mb-1">2014</div>
+                    <div class="text-xs font-bold uppercase text-ink/70">Création à Nanterre</div>
+                </div>
+                <div class="bg-cobalt text-cream p-7 rounded-3xl">
+                    <div class="font-display text-5xl text-cheddar mb-1">80+</div>
+                    <div class="text-xs font-bold uppercase text-cream/90">Restaurants Ouverts</div>
+                </div>
+                <div class="bg-ketchup text-ink p-7 rounded-3xl">
+                    <div class="font-display text-5xl mb-1">PFL</div>
+                    <div class="text-xs font-bold uppercase text-ink/90">Partenaire Officiel MMA</div>
+                </div>
+                <div class="bg-cream p-7 rounded-3xl border border-ink/10">
+                    <div class="font-display text-5xl text-ink mb-1">100%</div>
+                    <div class="text-xs font-bold uppercase text-ink/70">Burgers Halal</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 5. STORE LOCATOR & FRANCHISE -->
+    <section id="restos" class="py-24 px-5 md:px-10 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <div class="lg:col-span-7 space-y-6">
+                <h2 class="font-display text-4xl md:text-5xl text-cobalt uppercase">
+                    TROUVE TON RESTO G LA DALLE
+                </h2>
+                <div class="relative">
+                    <input v-model="searchCity" type="text" placeholder="Rechercher une ville (Nanterre, Bordeaux, Rouen, Roubaix, La Réunion...)"
+                        class="w-full bg-creamDark border border-ink/20 focus:border-cobalt rounded-full px-6 py-4 text-sm font-medium focus:outline-none">
+                </div>
+
+                <div class="space-y-3">
+                    <div v-for="r in filteredRestaurants" :key="r.name"
+                        class="bg-creamDark/60 border border-ink/10 rounded-2xl p-4 flex items-center justify-between gap-4">
+                        <div>
+                            <div class="font-display text-xl uppercase text-ink">{{ r.name }}</div>
+                            <div class="text-xs font-medium text-ink/70">{{ r.address }} • <span class="text-cobalt font-bold">{{ r.hours }}</span></div>
+                        </div>
+                        <button @click="openOrderModal(r.name)"
+                            class="bg-cobalt hover:bg-cobaltDark text-cream text-xs font-bold uppercase px-4 py-2.5 rounded-full shrink-0 cursor-pointer">
+                            Commander
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 bg-cobalt text-cream rounded-3xl p-8 md:p-10 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <span class="inline-block bg-cheddar text-ink text-xs font-bold uppercase px-3 py-1 rounded-full">
+                        FRANCHISE & EXPANSION
+                    </span>
+                    <h3 class="font-display text-4xl md:text-5xl uppercase leading-none">
+                        OUVRE TON RESTAURANT G LA DALLE.
+                    </h3>
+                    <p class="text-sm text-cream/85 leading-relaxed">
+                        Rejoins un réseau de plus de 80 points de vente porté par une forte communauté et soutenu par le groupe européen QSRP.
+                    </p>
+                </div>
+
+                <button @click="openOrderModal('Demande de Franchise')"
+                    class="mt-8 w-full bg-cream hover:bg-cheddar text-ink font-bold text-xs uppercase tracking-widest py-4 rounded-full transition-colors cursor-pointer">
+                    DEVENIR FRANCHISÉ ➔
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-ink/10 py-10 px-5 md:px-10 text-center md:text-left">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="font-display text-2xl text-cobalt uppercase">G LA DALLE</div>
+            <div class="text-xs font-semibold text-ink/60 uppercase">
+                Redesign Concept by <a href="https://onanavitaldev.github.io/w/" target="_blank" class="underline font-bold text-black">Vital</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================================================================== -->
+    <!-- MODALE 1 : FICHE DÉTAILLÉE D'UN PRODUIT (INGRÉDIENTS, TAILLES, KCAL)  -->
+    <!-- ===================================================================== -->
+    <div v-if="selectedProduct" @click.self="selectedProduct = null"
+         class="fixed inset-0 z-50 bg-ink/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cream border-2 border-ink rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl my-auto animate-fadeIn">
+            
+            <!-- Header Visuel de la Fiche -->
+            <div class="relative h-56 sm:h-64 bg-creamDark">
+                <img :src="selectedProduct.image" :alt="selectedProduct.name" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent"></div>
+
+                <!-- Bouton Fermer -->
+                <button @click="selectedProduct = null"
+                    class="absolute top-4 right-4 w-10 h-10 rounded-full bg-cream text-ink hover:bg-cobalt hover:text-cream flex items-center justify-center shadow-lg transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+
+                <!-- Badges en bas de l'image -->
+                <div class="absolute bottom-4 left-6 right-6 flex items-end justify-between gap-4">
+                    <div>
+                        <span class="inline-block bg-ketchup text-ink text-[10px] font-bold uppercase px-3 py-1 rounded-full mb-1.5">
+                            100% HALAL • {{ selectedProduct.category || 'SIGNATURE BURGER' }}
+                        </span>
+                        <h3 class="font-display text-3xl sm:text-4xl text-cream uppercase leading-none">
+                            {{ selectedProduct.name }}
+                        </h3>
+                    </div>
+                    <div class="bg-cobalt text-cream font-display text-2xl sm:text-3xl px-4 py-1.5 rounded-2xl shrink-0">
+                        {{ currentDetailPrice }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu Détaillé -->
+            <div class="p-6 sm:p-8 space-y-6">
+                
+                <!-- Description & Ingrédients -->
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-cobalt mb-1.5">Composition & Recette</div>
+                    <p class="text-sm font-medium text-ink/85 leading-relaxed">
+                        {{ selectedProduct.fullDesc || selectedProduct.desc || selectedProduct.ingredients }}
+                    </p>
+                </div>
+
+                <!-- Sélecteur de Taille (si le produit a Simple / Double / Triple) -->
+                <div v-if="selectedProduct.prices">
+                    <div class="text-xs font-bold uppercase tracking-wider text-ink/60 mb-2.5">Choisis ton format :</div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button v-for="(priceVal, sizeKey) in selectedProduct.prices" :key="sizeKey"
+                            @click="selectedSize = sizeKey"
+                            :class="selectedSize === sizeKey ? 'bg-cobalt text-cream border-cobalt' : 'bg-creamDark text-ink border-ink/15 hover:border-cobalt'"
+                            class="py-3 px-3 rounded-2xl border-2 text-center transition-all cursor-pointer">
+                            <div class="text-[11px] font-bold uppercase">{{ sizeLabels[sizeKey] }}</div>
+                            <div class="font-display text-xl mt-0.5">{{ priceVal }}</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Option Menu (Seul ou en Menu avec Frites + Boisson) -->
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-ink/60 mb-2.5">Formule :</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button @click="isMenuFormula = false"
+                            :class="!isMenuFormula ? 'bg-ink text-cream border-ink' : 'bg-creamDark text-ink border-ink/15'"
+                            class="py-3 px-4 rounded-2xl border-2 text-left transition-all cursor-pointer">
+                            <div class="text-xs font-bold uppercase">Produit Seul</div>
+                            <div class="text-[11px] opacity-75">Sans accompagnement</div>
+                        </button>
+                        <button @click="isMenuFormula = true"
+                            :class="isMenuFormula ? 'bg-ink text-cream border-ink' : 'bg-creamDark text-ink border-ink/15'"
+                            class="py-3 px-4 rounded-2xl border-2 text-left transition-all cursor-pointer">
+                            <div class="text-xs font-bold uppercase flex items-center justify-between">
+                                <span>En Menu (+2.50€)</span>
+                                <span class="text-cheddar">★</span>
+                            </div>
+                            <div class="text-[11px] opacity-75">Frites maison + Boisson 33cl</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Valeurs Nutritionnelles & Allergènes -->
+                <div class="bg-creamDark/80 border border-ink/10 rounded-2xl p-4">
+                    <div class="grid grid-cols-4 gap-2 text-center pb-3 border-b border-ink/10">
+                        <div>
+                            <div class="font-display text-lg text-ink">{{ selectedProduct.nutrition?.kcal || '740 kcal' }}</div>
+                            <div class="text-[10px] font-bold uppercase text-ink/60">Énergie</div>
+                        </div>
+                        <div>
+                            <div class="font-display text-lg text-cobalt">{{ selectedProduct.nutrition?.protein || '42g' }}</div>
+                            <div class="text-[10px] font-bold uppercase text-ink/60">Protéines</div>
+                        </div>
+                        <div>
+                            <div class="font-display text-lg text-ink">{{ selectedProduct.nutrition?.carbs || '54g' }}</div>
+                            <div class="text-[10px] font-bold uppercase text-ink/60">Glucides</div>
+                        </div>
+                        <div>
+                            <div class="font-display text-lg text-ink">{{ selectedProduct.nutrition?.fat || '36g' }}</div>
+                            <div class="text-[10px] font-bold uppercase text-ink/60">Lipides</div>
+                        </div>
+                    </div>
+                    <div class="pt-2.5 flex items-center gap-2 text-[11px] font-semibold text-ink/75">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-cobalt shrink-0"></i>
+                        <span><strong>Allergènes :</strong> {{ selectedProduct.allergens || 'Gluten (blé), Lait (cheddar), Œuf, Moutarde, Sésame.' }}</span>
+                    </div>
+                </div>
+
+                <!-- Bouton Commander depuis la Fiche -->
+                <button @click="proceedFromDetail"
+                    class="w-full py-4 rounded-full bg-cobalt hover:bg-cobaltDark text-cream font-bold text-xs uppercase tracking-widest shadow-lg transition-transform active:scale-98 cursor-pointer flex items-center justify-center gap-2">
+                    <span>COMMANDER MAINTENANT • {{ currentDetailPrice }}</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODALE 2 : CHOIX DU CANAL DE COMMANDE (CLICK & COLLECT / LIVRAISON)   -->
+    <!-- ===================================================================== -->
+    <div v-if="modalOpen" @click.self="modalOpen = false" class="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-cream border-2 border-ink rounded-3xl max-w-md w-full p-7 relative shadow-2xl">
+            <button @click="modalOpen = false" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-creamDark flex items-center justify-center hover:bg-cobalt hover:text-white transition-colors cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <span class="text-xs font-bold uppercase text-cobalt">COMMANDE RAPIDE</span>
+            <h3 class="font-display text-3xl text-ink uppercase mt-1 mb-2">TU VEUX ÇA COMMENT ?</h3>
+            <p v-if="modalItem" class="text-xs font-bold uppercase bg-creamDark px-3.5 py-2.5 rounded-xl mb-5 border border-ink/10">
+                Sélection : <span class="text-cobalt">{{ modalItem }}</span>
+            </p>
+
+            <div class="space-y-2.5">
+                <a href="#restos" @click="modalOpen = false"
+                    class="w-full py-3.5 px-5 rounded-full bg-cobalt text-cream font-bold text-xs uppercase tracking-wider flex items-center justify-between">
+                    <span>Click & Collect (Sur place / Emporter)</span>
+                    <i data-lucide="store" class="w-4 h-4"></i>
+                </a>
+                <button @click="modalOpen = false"
+                    class="w-full py-3.5 px-5 rounded-full bg-creamDark hover:bg-ink hover:text-cream text-ink font-bold text-xs uppercase tracking-wider flex items-center justify-between transition-colors cursor-pointer">
+                    <span>Livraison Uber Eats</span>
+                    <i data-lucide="bike" class="w-4 h-4"></i>
+                </button>
+                <button @click="modalOpen = false"
+                    class="w-full py-3.5 px-5 rounded-full bg-creamDark hover:bg-ink hover:text-cream text-ink font-bold text-xs uppercase tracking-wider flex items-center justify-between transition-colors cursor-pointer">
+                    <span>Livraison Deliveroo</span>
+                    <i data-lucide="bike" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>
